@@ -1,0 +1,1108 @@
+{
+  "manifest_schema_version": 3,
+  "sdk_version": "5.11.0",
+  "app_id": "thoughtspot-connector",
+  "version": "0.1.0",
+  "name": "ThoughtSpot",
+  "description": "Connect your own ThoughtSpot instance to manage Liveboards, Answers, Worksheets and run natural-language search queries from Imperal -- export reports, monitor content by tag, and get instance health at a glance. Nothing is hosted or proxied by Imperal beyond the request itself.",
+  "icon": "icon.svg",
+  "actions_explicit": true,
+  "system": false,
+  "capabilities": [
+    "thoughtspot:read",
+    "thoughtspot:write"
+  ],
+  "tools": [
+    {
+      "name": "connect_thoughtspot",
+      "description": "Connect a ThoughtSpot instance via username/password, after validating the credentials actually work (logs in).",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:connection"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "instance_hostname": {
+            "description": "ThoughtSpot instance hostname, e.g. myorg.thoughtspot.cloud",
+            "title": "Instance Hostname",
+            "type": "string"
+          },
+          "username": {
+            "description": "ThoughtSpot username (or service account username).",
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "description": "ThoughtSpot password (or service account secret).",
+            "title": "Password",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "description": "Optional friendly label, e.g. 'Production instance'.",
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instance_hostname",
+          "username",
+          "password"
+        ],
+        "title": "ConnectThoughtSpotParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "instance_hostname": {
+            "title": "Instance Hostname",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "instance_hostname"
+        ],
+        "title": "ConnectionInfo",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.connected",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "disconnect_thoughtspot",
+      "description": "Disconnect a ThoughtSpot instance: deletes only the saved credentials. Nothing in ThoughtSpot itself is changed.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "delete:connection"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "description": "Connection id from list_connections.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id"
+        ],
+        "title": "DisconnectThoughtSpotParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "description": "Explicit empty params model -- V17 disallows untyped handlers.",
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.disconnected",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "list_connections",
+      "description": "List the connected ThoughtSpot instances.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "description": "Explicit empty params model -- V17 disallows untyped handlers.",
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ConnectionInfo": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "label": {
+                "title": "Label",
+                "type": "string"
+              },
+              "instance_hostname": {
+                "title": "Instance Hostname",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "instance_hostname"
+            ],
+            "title": "ConnectionInfo",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/ConnectionInfo"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListConnectionsResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.list_connections",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "list_tags",
+      "description": "List tags configured on the connected ThoughtSpot instance -- ThoughtSpot's flat content organization scheme (no folders).",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "TagItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "name": {
+                "title": "Name",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "TagItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/TagItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListTagsResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.list_tags",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "list_liveboards",
+      "description": "List Liveboards on the connected ThoughtSpot instance, optionally filtered to one tag.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "tag": {
+            "default": "",
+            "description": "Filter to one tag id; omit for all Liveboards visible to the credentials.",
+            "title": "Tag",
+            "type": "string"
+          }
+        },
+        "title": "ListLiveboardsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "LiveboardItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "author_name": {
+                "default": "",
+                "title": "Author Name",
+                "type": "string"
+              },
+              "modified": {
+                "default": "",
+                "title": "Modified",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "LiveboardItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/LiveboardItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListLiveboardsResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.list_liveboards",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "get_liveboard",
+      "description": "Read one Liveboard's metadata in full by id.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "liveboard_id": {
+            "description": "Liveboard id from list_liveboards.",
+            "title": "Liveboard Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "liveboard_id"
+        ],
+        "title": "LiveboardScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "author_name": {
+            "default": "",
+            "title": "Author Name",
+            "type": "string"
+          },
+          "created": {
+            "default": "",
+            "title": "Created",
+            "type": "string"
+          },
+          "modified": {
+            "default": "",
+            "title": "Modified",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "LiveboardDetail",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.get_liveboard",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "export_liveboard",
+      "description": "Export a Liveboard as PDF, PNG, or CSV.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "liveboard_id": {
+            "description": "Liveboard id from list_liveboards.",
+            "title": "Liveboard Id",
+            "type": "string"
+          },
+          "file_format": {
+            "default": "PDF",
+            "description": "PDF, PNG, or CSV.",
+            "title": "File Format",
+            "type": "string"
+          }
+        },
+        "required": [
+          "liveboard_id"
+        ],
+        "title": "ExportLiveboardParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "file_format": {
+            "title": "File Format",
+            "type": "string"
+          },
+          "content_base64": {
+            "title": "Content Base64",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_format",
+          "content_base64"
+        ],
+        "title": "ExportResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.export_liveboard",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "list_answers",
+      "description": "List Answers on the connected ThoughtSpot instance, optionally filtered to one tag.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "tag": {
+            "default": "",
+            "description": "Filter to one tag id; omit for all Answers visible to the credentials.",
+            "title": "Tag",
+            "type": "string"
+          }
+        },
+        "title": "ListAnswersParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "AnswerItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "author_name": {
+                "default": "",
+                "title": "Author Name",
+                "type": "string"
+              },
+              "modified": {
+                "default": "",
+                "title": "Modified",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "AnswerItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/AnswerItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListAnswersResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.list_answers",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "get_answer",
+      "description": "Read one Answer's metadata in full by id.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "answer_id": {
+            "description": "Answer id from list_answers.",
+            "title": "Answer Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "answer_id"
+        ],
+        "title": "AnswerScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "author_name": {
+            "default": "",
+            "title": "Author Name",
+            "type": "string"
+          },
+          "modified": {
+            "default": "",
+            "title": "Modified",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "AnswerDetail",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.get_answer",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "export_answer",
+      "description": "Export an Answer's result as CSV, PDF, or PNG.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "answer_id": {
+            "description": "Answer id from list_answers.",
+            "title": "Answer Id",
+            "type": "string"
+          },
+          "file_format": {
+            "default": "CSV",
+            "description": "CSV, PDF, or PNG.",
+            "title": "File Format",
+            "type": "string"
+          }
+        },
+        "required": [
+          "answer_id"
+        ],
+        "title": "ExportAnswerParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "file_format": {
+            "title": "File Format",
+            "type": "string"
+          },
+          "content_base64": {
+            "title": "Content Base64",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_format",
+          "content_base64"
+        ],
+        "title": "ExportResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.export_answer",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "list_worksheets",
+      "description": "List Worksheets (semantic models) on the connected ThoughtSpot instance.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "WorksheetItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "default": "",
+                "title": "Description",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "WorksheetItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/WorksheetItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListWorksheetsResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.list_worksheets",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "get_worksheet",
+      "description": "Read one Worksheet's metadata in full by id.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "worksheet_id": {
+            "description": "Worksheet id from list_worksheets.",
+            "title": "Worksheet Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "worksheet_id"
+        ],
+        "title": "WorksheetScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "WorksheetDetail",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.get_worksheet",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "search_data",
+      "description": "Run a natural-language search query against a Worksheet -- ThoughtSpot's Search & AI-driven analytics core feature.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "worksheet_id": {
+            "description": "Worksheet id to run the natural-language query against.",
+            "title": "Worksheet Id",
+            "type": "string"
+          },
+          "query": {
+            "description": "Natural-language search query, e.g. 'total sales by region this year'.",
+            "title": "Query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "worksheet_id",
+          "query"
+        ],
+        "title": "SearchDataParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "row_count": {
+            "default": 0,
+            "title": "Row Count",
+            "type": "integer"
+          }
+        },
+        "title": "SearchDataResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.search_data",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "list_users",
+      "description": "List users on the connected ThoughtSpot instance.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ThoughtSpotUserItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "display_name": {
+                "default": "",
+                "title": "Display Name",
+                "type": "string"
+              },
+              "email": {
+                "default": "",
+                "title": "Email",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "ThoughtSpotUserItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/ThoughtSpotUserItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListUsersResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.list_users",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "list_groups",
+      "description": "List groups on the connected ThoughtSpot instance.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ThoughtSpotGroupItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "display_name": {
+                "default": "",
+                "title": "Display Name",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "ThoughtSpotGroupItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/ThoughtSpotGroupItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListGroupsResult",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.list_groups",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    },
+    {
+      "name": "audit_instance_health",
+      "description": "Build one aggregated health report across the connected ThoughtSpot instance: Liveboard/Answer/Worksheet/user/tag counts.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "AuditHealthParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "liveboard_count": {
+            "default": 0,
+            "title": "Liveboard Count",
+            "type": "integer"
+          },
+          "answer_count": {
+            "default": 0,
+            "title": "Answer Count",
+            "type": "integer"
+          },
+          "worksheet_count": {
+            "default": 0,
+            "title": "Worksheet Count",
+            "type": "integer"
+          },
+          "user_count": {
+            "default": 0,
+            "title": "User Count",
+            "type": "integer"
+          },
+          "tag_count": {
+            "default": 0,
+            "title": "Tag Count",
+            "type": "integer"
+          }
+        },
+        "title": "HealthAudit",
+        "type": "object"
+      },
+      "event": "thoughtspot-connector.audit_instance_health",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_thoughtspot-connector_chat"
+    }
+  ],
+  "signals": [],
+  "schedules": [],
+  "required_scopes": [],
+  "icon_size_bytes": 316,
+  "lifecycle": {
+    "health_check": {
+      "interval_sec": 60
+    }
+  },
+  "panels": [
+    {
+      "panel_id": "thoughtspot_connect_help",
+      "slot": "overlay",
+      "title": "Connect ThoughtSpot",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "thoughtspot_sidebar",
+      "slot": "left",
+      "title": "",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "thoughtspot_tag",
+      "slot": "center",
+      "title": "Content",
+      "tree": {},
+      "icon": "🏷️",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "thoughtspot_liveboard",
+      "slot": "center",
+      "title": "Liveboard",
+      "tree": {},
+      "icon": "📊",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "thoughtspot_answer",
+      "slot": "center",
+      "title": "Answer",
+      "tree": {},
+      "icon": "🔎",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "thoughtspot_worksheets",
+      "slot": "center",
+      "title": "Worksheets",
+      "tree": {},
+      "icon": "📐",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "thoughtspot_search",
+      "slot": "center",
+      "title": "Search",
+      "tree": {},
+      "icon": "🔍",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "thoughtspot_users",
+      "slot": "center",
+      "title": "Users",
+      "tree": {},
+      "icon": "👥",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "thoughtspot_groups",
+      "slot": "center",
+      "title": "Groups",
+      "tree": {},
+      "icon": "👪",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "thoughtspot_settings",
+      "slot": "center",
+      "title": "App settings",
+      "tree": {},
+      "icon": "⚙️",
+      "refresh": "manual",
+      "center_overlay": true
+    }
+  ]
+}
