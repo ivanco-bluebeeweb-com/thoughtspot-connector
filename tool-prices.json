@@ -1,0 +1,18 @@
+{
+  "connect_thoughtspot": 0,
+  "disconnect_thoughtspot": 0,
+  "list_connections": 0,
+  "list_tags": 8,
+  "list_liveboards": 8,
+  "get_liveboard": 8,
+  "list_answers": 8,
+  "get_answer": 8,
+  "list_worksheets": 8,
+  "get_worksheet": 8,
+  "list_users": 8,
+  "list_groups": 8,
+  "export_liveboard": 16,
+  "export_answer": 16,
+  "search_data": 20,
+  "audit_instance_health": 40
+}
