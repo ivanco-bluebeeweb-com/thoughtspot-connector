@@ -26,8 +26,7 @@ from app import ext
 
 def _settings_button() -> ui.UINode:
     return ui.Button(
-        "App settings", variant="secondary", size="sm", full_width=True,
-        icon="settings", on_click=ui.Call("__panel__thoughtspot_settings"),
+        "App settings", variant="secondary", size="sm", icon="settings", on_click=ui.Call("__panel__thoughtspot_settings"),
     )
 
 
@@ -39,6 +38,9 @@ def _connect_section() -> ui.UINode:
     return ui.Stack(direction="v", gap=3, align="stretch", children=[
         ui.Button("How do I set this up?", variant="ghost", size="sm", icon="HelpCircle",
                   on_click=ui.Call("__panel__thoughtspot_connect_help")),
+        ui.Button("Sign in with ThoughtSpot (SSO / SAML)", variant="primary", size="sm", icon="login"),
+        ui.Divider(),
+        ui.Text("Or connect via Admin Credentials", variant="caption"),
         ui.Form(
             action="connect_thoughtspot",
             submit_label="Verify and connect",
@@ -54,8 +56,7 @@ def _connect_section() -> ui.UINode:
 
 def _tag_row(tag: dict) -> ui.UINode:
     return ui.Button(
-        tag.get("name", ""), variant="ghost", size="sm", full_width=True,
-        on_click=ui.Call("__panel__thoughtspot_tag", {"tag": tag.get("id", "")}),
+        tag.get("name", ""), variant="ghost", size="sm", on_click=ui.Call("__panel__thoughtspot_tag", {"tag": tag.get("id", "")}),
     )
 
 
@@ -83,8 +84,7 @@ async def thoughtspot_sidebar(ctx, **kwargs) -> object:
     tags = result.data.items if (result.success and result.data) else []
 
     children: list[ui.UINode] = [ui.Button(
-        "All content", variant="ghost", size="sm", full_width=True,
-        on_click=ui.Call("__panel__thoughtspot_tag", {"tag": ""}),
+        "All content", variant="ghost", size="sm", on_click=ui.Call("__panel__thoughtspot_tag", {"tag": ""}),
     )]
     if not tags:
         children.append(ui.Text("No tags on this instance yet.", variant="caption"))
